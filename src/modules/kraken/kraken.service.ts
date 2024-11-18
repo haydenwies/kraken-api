@@ -49,6 +49,8 @@ class KrakenService {
 
 		const signature = this.getKrakenSignature("/0/private/AddOrder", payload)
 
+		console.log(signature)
+
 		const res = await fetch("https://api.vip.uat.lobster.kraken.com/0/private/AddOrder", {
 			method: "POST",
 			headers: {
