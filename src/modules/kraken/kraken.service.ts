@@ -37,8 +37,8 @@ class KrakenService {
 		console.log(`Content Type, ${contentType}`)
 		// console.log("Body:", res.body)
 
-		// const decodedBody = await decodeResponseBody(res.body)
-		// console.log(decodedBody)
+		const decodedBody = await decodeResponseBody(res.body)
+		console.log(`Body: ${decodedBody}`)
 
 		// const parsedBody = await parseResponseBody(decodedBody)
 

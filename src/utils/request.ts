@@ -3,20 +3,25 @@ const decodeResponseBody = async (
 ): Promise<string | null> => {
 	if (!body) return null
 
-	const reader = body.getReader()
-	const decoder = new TextDecoder()
 	let result: string | null = null
 
-	if (reader) {
-		result = ""
+	try {
+		const reader = body.getReader()
+		const decoder = new TextDecoder()
 
-		while (true) {
-			const { done, value } = await reader.read()
-			if (done) break
-			result += decoder.decode(value, { stream: true })
+		if (reader) {
+			result = ""
+
+			while (true) {
+				const { done, value } = await reader.read()
+				if (done) break
+				result += decoder.decode(value, { stream: true })
+			}
+
+			result += decoder.decode()
 		}
-
-		result += decoder.decode()
+	} catch (err: unknown) {
+		result = "[Failed to Decode]"
 	}
 
 	return result
