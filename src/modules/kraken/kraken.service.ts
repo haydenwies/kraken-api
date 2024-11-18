@@ -16,23 +16,19 @@ class KrakenService {
 	}
 
 	private getKrakenSignature(urlPath: string, data: Record<string, any>) {
-		let encoded
-		if (typeof data === "string") {
-			const jsonData = JSON.parse(data)
-			encoded = jsonData.nonce + data
-		} else if (typeof data === "object") {
-			const dataStr = querystring.stringify(data)
-			encoded = data.nonce + dataStr
-		} else {
-			throw new Error("Invalid data type")
-		}
+		let encoded: string
+
+		const dataStr = querystring.stringify(data)
+		encoded = data.nonce + dataStr
 
 		const sha256Hash = crypto.createHash("sha256").update(encoded).digest()
 		const message = urlPath + sha256Hash.toString("binary")
 		const secretBuffer = Buffer.from(this.krakenApiSecret, "base64")
+
 		const hmac = crypto.createHmac("sha512", secretBuffer)
 		hmac.update(message, "binary")
 		const signature = hmac.digest("base64")
+
 		return signature
 	}
 
@@ -48,8 +44,6 @@ class KrakenService {
 		}
 
 		const signature = this.getKrakenSignature("/0/private/AddOrder", payload)
-
-		console.log(signature)
 
 		const res = await fetch("https://api.vip.uat.lobster.kraken.com/0/private/AddOrder", {
 			method: "POST",
