@@ -1,4 +1,4 @@
-import { decodeResponseBody, parseResponseBody } from "@/utils/request"
+import { decodeResponseBody, parseResponseBody } from "../../utils/request"
 
 class KrakenService {
 	private krakenApiKey: string
