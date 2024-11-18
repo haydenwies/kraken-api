@@ -1,3 +1,5 @@
+import { decodeResponseBody, parseResponseBody } from "@/utils/request"
+
 class KrakenService {
 	private krakenApiKey: string
 	private krakenApiSecret: string
@@ -32,9 +34,10 @@ class KrakenService {
 
 		console.log(res)
 
-		const body = decodeResponseBody(res.body)
+		const decodedBody = await decodeResponseBody(res.body)
+		const parsedBody = await parseResponseBody(decodedBody)
 
-		console.log(body)
+		console.log(parsedBody)
 	}
 }
 

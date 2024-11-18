@@ -35,3 +35,5 @@ const parseResponseBody = (decodedBody: string | null) => {
 
 	return result
 }
+
+export { decodeResponseBody, parseResponseBody }

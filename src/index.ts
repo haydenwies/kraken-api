@@ -13,8 +13,7 @@ app.get("/", (req: Request, res: Response) => {
 		process.env.KRAKEN_API_SECRET
 	)
 
-	const krakenRes = krakenService.addOrder()
-	console.log(krakenRes)
+	krakenService.addOrder()
 
 	res.send("Express + TypeScript Server hello")
 })
