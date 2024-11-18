@@ -35,9 +35,11 @@ class KrakenService {
 		console.log(res)
 
 		const decodedBody = await decodeResponseBody(res.body)
-		const parsedBody = await parseResponseBody(decodedBody)
+		console.log(decodedBody)
 
-		console.log(parsedBody)
+		// const parsedBody = await parseResponseBody(decodedBody)
+
+		// console.log(parsedBody)
 	}
 }
 
