@@ -33,6 +33,8 @@ class KrakenService {
 		})
 
 		console.log(res)
+		const contentType = res.headers.get("content-type")
+		console.log(contentType ? JSON.parse(contentType) : "No content type")
 		console.log(res.body)
 
 		// const decodedBody = await decodeResponseBody(res.body)
