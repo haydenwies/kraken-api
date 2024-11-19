@@ -49,7 +49,7 @@ class KrakenService {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/x-www-form-urlencoded",
-				Accept: "application/json",
+				Accept: "application/x-www-form-urlencoded",
 				"API-Key": this.krakenApiKey,
 				"API-Sign": signature
 			},
