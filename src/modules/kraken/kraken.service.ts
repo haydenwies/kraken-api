@@ -48,8 +48,8 @@ class KrakenService {
 		const res = await fetch("https://api.vip.uat.lobster.kraken.com/0/private/AddOrder", {
 			method: "POST",
 			headers: {
-				"Content-Type": "application/x-www-form-urlencoded",
-				Accept: "application/x-www-form-urlencoded",
+				"Content-Type": "application/json",
+				Accept: "application/json",
 				"API-Key": this.krakenApiKey,
 				"API-Sign": signature
 			},
