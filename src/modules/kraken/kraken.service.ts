@@ -2,6 +2,7 @@ import crypto from "crypto"
 import querystring from "querystring"
 
 import { decodeResponseBody, parseResponseBody } from "../../utils/request"
+import * as https from "https"
 
 class KrakenService {
 	private krakenApiKey: string
@@ -15,58 +16,64 @@ class KrakenService {
 		this.krakenApiSecret = krakenApiSecret
 	}
 
-	private getKrakenSignature(urlPath: string, data: Record<string, any>) {
-		let encoded: string
-
-		const dataStr = querystring.stringify(data)
-		encoded = data.nonce + dataStr
-
-		const sha256Hash = crypto.createHash("sha256").update(encoded).digest()
-		const message = urlPath + sha256Hash.toString("binary")
-		const secretBuffer = Buffer.from(this.krakenApiSecret, "base64")
-
-		const hmac = crypto.createHmac("sha512", secretBuffer)
-		hmac.update(message, "binary")
-		const signature = hmac.digest("base64")
-
-		return signature
-	}
-
 	public async addOrder() {
-		const payload = {
-			nonce: Date.now().toString(),
+		const api_domain: string = "https://api.vip.uat.lobster.kraken.com"
+		const api_path: string = "/0/private/AddOrder"
+		const api_nonce: string = String(Date.now() * 1000)
+		const postData = {
+			nonce: api_nonce,
 			ordertype: "limit",
 			type: "buy",
 			volume: "1.25",
 			pair: "XBTUSD",
-			price: "27500",
-			cl_ord_id: "6d1b345e-2821-40e2-ad83-4ecb18a06876"
+			price: "27500"
 		}
 
-		const signature = this.getKrakenSignature("/0/private/AddOrder", payload)
+		const api_post: string = querystring.stringify(postData)
 
-		const res = await fetch("https://api.vip.uat.lobster.kraken.com/0/private/AddOrder", {
+		// Create SHA-256 hash of nonce + POST data
+		const api_sha256 = crypto.createHash("sha256")
+		api_sha256.update(
+			Buffer.concat([Buffer.from(api_nonce, "utf8"), Buffer.from(api_post, "utf8")])
+		)
+		const api_sha256_digest: Buffer = api_sha256.digest()
+
+		const secretBuffer: Buffer = Buffer.from(this.krakenApiSecret, "base64")
+		const api_hmac = crypto.createHmac("sha512", secretBuffer)
+		api_hmac.update(Buffer.concat([Buffer.from(api_path, "utf8"), api_sha256_digest]))
+		const api_signature: string = api_hmac.digest("base64")
+
+		const options: https.RequestOptions = {
+			hostname: "api.vip.uat.lobster.kraken.com",
+			path: api_path,
 			method: "POST",
 			headers: {
-				"Content-Type": "application/json",
-				Accept: "application/json",
+				"Content-Type": "application/x-www-form-urlencoded",
 				"API-Key": this.krakenApiKey,
-				"API-Sign": signature
-			},
-			body: JSON.stringify(payload)
+				"API-Sign": api_signature,
+				"User-Agent": "Kraken REST API"
+			}
+		}
+
+		const req = https.request(options, (res) => {
+			let data = ""
+
+			res.on("data", (chunk) => {
+				data += chunk
+			})
+
+			res.on("end", () => {
+				console.log("API JSON DATA:")
+				console.log(data)
+			})
 		})
 
-		// console.log(res)
-		const contentType = res.headers.get("content-type")
-		console.log(`Content Type, ${contentType}`)
-		// console.log("Body:", res.body)
+		req.on("error", (error) => {
+			console.error("Error making request:", error)
+		})
 
-		const decodedBody = await decodeResponseBody(res.body)
-		console.log(`Body: ${decodedBody}`)
-
-		// const parsedBody = await parseResponseBody(decodedBody)
-
-		// console.log(parsedBody)
+		req.write(api_post)
+		req.end()
 	}
 }
 
