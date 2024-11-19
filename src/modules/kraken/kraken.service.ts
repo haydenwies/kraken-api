@@ -1,8 +1,7 @@
-import crypto from "crypto"
-import querystring from "querystring"
+import * as crypto from "crypto"
+import * as querystring from "querystring"
 
-import { decodeResponseBody, parseResponseBody } from "../../utils/request"
-import * as https from "https"
+import { makeRequest } from "../../utils/https"
 
 class KrakenService {
 	private krakenApiKey: string
@@ -18,7 +17,7 @@ class KrakenService {
 		this.krakenApiSecret = krakenApiSecret
 	}
 
-	private makeRequest({
+	private async makeRequest({
 		path,
 		nonce,
 		data
@@ -28,12 +27,12 @@ class KrakenService {
 		data: Record<string, string>
 	}) {
 		// Convert POST data to URL-encoded string
-		const api_post: string = querystring.stringify(data)
+		const postData: string = querystring.stringify(data)
 
 		// Create SHA-256 hash of nonce + POST data
 		const api_sha256 = crypto.createHash("sha256")
 		api_sha256.update(
-			Buffer.concat([Buffer.from(nonce, "utf8"), Buffer.from(api_post, "utf8")])
+			Buffer.concat([Buffer.from(nonce, "utf8"), Buffer.from(postData, "utf8")])
 		)
 		const api_sha256_digest: Buffer = api_sha256.digest()
 
@@ -44,7 +43,7 @@ class KrakenService {
 		const api_signature: string = api_hmac.digest("base64")
 
 		// HTTP request options
-		const options: https.RequestOptions = {
+		const options = {
 			hostname: this.HOSTNAME,
 			path: path,
 			method: "POST",
@@ -56,27 +55,8 @@ class KrakenService {
 			}
 		}
 
-		// Perform HTTP request
-		const req = https.request(options, (res) => {
-			let data = ""
-
-			res.on("data", (chunk) => {
-				data += chunk
-			})
-
-			res.on("end", () => {
-				console.log("API JSON DATA:")
-				console.log(data)
-			})
-		})
-
-		req.on("error", (error) => {
-			console.error("Error making request:", error)
-		})
-
-		// Send POST data
-		req.write(api_post)
-		req.end()
+		const res = await makeRequest(options, postData)
+		console.log(res)
 	}
 
 	private makeNonce() {
