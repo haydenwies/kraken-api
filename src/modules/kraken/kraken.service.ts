@@ -25,7 +25,7 @@ class KrakenService {
 		path: string
 		nonce: string
 		data: Record<string, string>
-	}) {
+	}): Promise<string> {
 		// Convert POST data to URL-encoded string
 		const postData: string = querystring.stringify(data)
 
@@ -56,14 +56,15 @@ class KrakenService {
 		}
 
 		const res = await makeRequest(options, postData)
-		console.log(res)
+
+		return res
 	}
 
 	private makeNonce() {
 		return String(Date.now() * 1000)
 	}
 
-	public async addOrder() {
+	public async addOrder(): Promise<void> {
 		const path = "/0/private/AddOrder"
 		const nonce = this.makeNonce()
 		const data = {
@@ -75,7 +76,23 @@ class KrakenService {
 			price: "27500"
 		}
 
-		this.makeRequest({ path: path, nonce: nonce, data: data })
+		const res = await this.makeRequest({ path: path, nonce: nonce, data: data })
+		console.log(res)
+	}
+
+	public async withdraw() {
+		const path = "/0/private/Withdraw"
+		const nonce = this.makeNonce()
+		const data = {
+			nonce: nonce,
+			asset: "XBT",
+			key: "btc_2709",
+			amount: "0.725",
+			address: "bc1kar0ssrr7xf3vy5l6d3lydnwkre5og2zz3f5ldq"
+		}
+
+		const res = await this.makeRequest({ path: path, nonce: nonce, data: data })
+		console.log(res)
 	}
 }
 
