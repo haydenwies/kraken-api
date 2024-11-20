@@ -10,7 +10,8 @@ const port = process.env.PORT
 app.get("/", (req: Request, res: Response) => {
 	const krakenService = new KrakenService(
 		process.env.KRAKEN_API_KEY,
-		process.env.KRAKEN_API_SECRET
+		process.env.KRAKEN_API_SECRET,
+		process.env.KRAKEN_API_WITHDRAW_KEY
 	)
 
 	krakenService.addOrder()
@@ -21,7 +22,8 @@ app.get("/", (req: Request, res: Response) => {
 app.get("/withdraw", (req: Request, res: Response) => {
 	const krakenService = new KrakenService(
 		process.env.KRAKEN_API_KEY,
-		process.env.KRAKEN_API_SECRET
+		process.env.KRAKEN_API_SECRET,
+		process.env.KRAKEN_API_WITHDRAW_KEY
 	)
 
 	krakenService.withdraw()
