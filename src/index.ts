@@ -18,6 +18,17 @@ app.get("/", (req: Request, res: Response) => {
 	res.send("Express + TypeScript Server hello")
 })
 
+app.get("/withdraw", (req: Request, res: Response) => {
+	const krakenService = new KrakenService(
+		process.env.KRAKEN_API_KEY,
+		process.env.KRAKEN_API_SECRET
+	)
+
+	krakenService.withdraw()
+
+	res.status(200).send("OK")
+})
+
 app.listen(port, () => {
 	console.log(`[server]: Server is running at http://localhost:${port}`)
 })
