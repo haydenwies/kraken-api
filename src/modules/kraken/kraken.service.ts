@@ -90,8 +90,8 @@ class KrakenService {
 			nonce: nonce,
 			asset: "XBT",
 			key: this.krakenApiWithdrawKey,
-			amount: "0.725",
-			address: "bc1kar0ssrr7xf3vy5l6d3lydnwkre5og2zz3f5ldq"
+			amount: "0.725"
+			// address: "bc1kar0ssrr7xf3vy5l6d3lydnwkre5og2zz3f5ldq"
 		}
 
 		const res = await this.makeRequest({ path: path, nonce: nonce, data: data })
