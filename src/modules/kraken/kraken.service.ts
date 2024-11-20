@@ -6,15 +6,18 @@ import { makeRequest } from "../../utils/https"
 class KrakenService {
 	private krakenApiKey: string
 	private krakenApiSecret: string
+	private krakenApiWithdrawKey: string
 
 	private HOSTNAME = "api.vip.uat.lobster.kraken.com"
 
-	constructor(krakenApiKey?: string, krakenApiSecret?: string) {
+	constructor(krakenApiKey?: string, krakenApiSecret?: string, krakenApiWithdrawKey?: string) {
 		if (!krakenApiKey) throw new Error("Cannot find KRAKEN_API_KEY")
 		if (!krakenApiSecret) throw new Error("Cannot find KRAKEN_API_SECRET")
+		if (!krakenApiWithdrawKey) throw new Error("Cannot find KRAKEN_API_WITHDRAW_KEY")
 
 		this.krakenApiKey = krakenApiKey
 		this.krakenApiSecret = krakenApiSecret
+		this.krakenApiWithdrawKey = krakenApiWithdrawKey
 	}
 
 	private async makeRequest({
@@ -86,7 +89,7 @@ class KrakenService {
 		const data = {
 			nonce: nonce,
 			asset: "XBT",
-			key: "SDM_Test_API",
+			key: this.krakenApiWithdrawKey,
 			amount: "0.725",
 			address: "bc1kar0ssrr7xf3vy5l6d3lydnwkre5og2zz3f5ldq"
 		}
