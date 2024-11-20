@@ -84,6 +84,8 @@ class KrakenService {
 	}
 
 	public async withdraw() {
+		console.log(this.krakenApiWithdrawKey)
+
 		const path = "/0/private/Withdraw"
 		const nonce = this.makeNonce()
 		const data = {
