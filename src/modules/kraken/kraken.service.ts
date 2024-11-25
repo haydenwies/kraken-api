@@ -2,11 +2,13 @@ import * as crypto from "crypto"
 import * as querystring from "querystring"
 
 import { makeRequest } from "../../utils/https"
+import { ServiceRes } from "../../types/service-response"
+import { KrakenAddOrderRes, KrakenRes, KrakenResErrors, KrakenWithdrawRes } from "./kraken.type"
 
 class KrakenService {
-	private krakenApiKey: string
-	private krakenApiSecret: string
-	private krakenApiWithdrawKey: string
+	private apiKey: string
+	private apiSecret: string
+	private apiWithdrawKey: string
 
 	private HOSTNAME = "api.vip.uat.lobster.kraken.com"
 
@@ -15,12 +17,13 @@ class KrakenService {
 		if (!krakenApiSecret) throw new Error("Cannot find KRAKEN_API_SECRET")
 		if (!krakenApiWithdrawKey) throw new Error("Cannot find KRAKEN_API_WITHDRAW_KEY")
 
-		this.krakenApiKey = krakenApiKey
-		this.krakenApiSecret = krakenApiSecret
-		this.krakenApiWithdrawKey = krakenApiWithdrawKey
+		this.apiKey = krakenApiKey
+		this.apiSecret = krakenApiSecret
+		this.apiWithdrawKey = krakenApiWithdrawKey
 	}
 
-	private async makeRequest({
+	// TODO Update to include GET method (make data param optional)
+	private async makeRequest<T>({
 		path,
 		nonce,
 		data
@@ -28,7 +31,7 @@ class KrakenService {
 		path: string
 		nonce: string
 		data: Record<string, string>
-	}): Promise<string> {
+	}): Promise<KrakenRes<T>> {
 		// Convert POST data to URL-encoded string
 		const postData: string = querystring.stringify(data)
 
@@ -40,7 +43,7 @@ class KrakenService {
 		const api_sha256_digest: Buffer = api_sha256.digest()
 
 		// Create HMAC using SHA-512
-		const secretBuffer: Buffer = Buffer.from(this.krakenApiSecret, "base64")
+		const secretBuffer: Buffer = Buffer.from(this.apiSecret, "base64")
 		const api_hmac = crypto.createHmac("sha512", secretBuffer)
 		api_hmac.update(Buffer.concat([Buffer.from(path, "utf8"), api_sha256_digest]))
 		const api_signature: string = api_hmac.digest("base64")
@@ -52,22 +55,40 @@ class KrakenService {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/x-www-form-urlencoded",
-				"API-Key": this.krakenApiKey,
+				"API-Key": this.apiKey,
 				"API-Sign": api_signature,
 				"User-Agent": "Kraken REST API"
 			}
 		}
 
 		const res = await makeRequest(options, postData)
+		const resJson: KrakenRes<T> = JSON.parse(res)
 
-		return res
+		const maskedError = this.handleErrors(resJson.error)
+		resJson.error = maskedError
+
+		return resJson
 	}
 
-	private makeNonce() {
+	private handleErrors(errors: string[]): string[] {
+		const errorsRes: string[] = []
+
+		if (errors.length > 0) {
+			errors.forEach((error) => {
+				if (error in Object.keys(KrakenResErrors)) errorsRes.push(KrakenResErrors[error])
+			})
+		}
+
+		return errorsRes
+	}
+
+	private makeNonce(): string {
 		return String(Date.now() * 1000)
 	}
 
-	public async addOrder(): Promise<void> {
+	public async addOrder(): Promise<ServiceRes<KrakenAddOrderRes>> {
+		// https://docs.kraken.com/api/docs/rest-api/add-order/
+
 		const path = "/0/private/AddOrder"
 		const nonce = this.makeNonce()
 		const data = {
@@ -79,25 +100,47 @@ class KrakenService {
 			price: "27500"
 		}
 
-		const res = await this.makeRequest({ path: path, nonce: nonce, data: data })
-		console.log(res)
+		const krakenRes = await this.makeRequest<KrakenAddOrderRes>({
+			path: path,
+			nonce: nonce,
+			data: data
+		})
+
+		let res: ServiceRes<KrakenAddOrderRes>
+
+		if (krakenRes.error.length > 0) res = { success: false, error: krakenRes.error }
+		else if (krakenRes.result === undefined) throw new Error("No Kraken result")
+		else res = { success: true, data: krakenRes.result }
+
+		return res
 	}
 
-	public async withdraw() {
-		console.log(this.krakenApiWithdrawKey)
+	public async withdraw(): Promise<ServiceRes<KrakenWithdrawRes>> {
+		// https://docs.kraken.com/api/docs/rest-api/withdraw-funds/
 
 		const path = "/0/private/Withdraw"
 		const nonce = this.makeNonce()
 		const data = {
 			nonce: nonce,
 			asset: "XBT",
-			key: this.krakenApiWithdrawKey,
+			key: this.apiWithdrawKey,
 			amount: "0.725"
-			// address: "bc1kar0ssrr7xf3vy5l6d3lydnwkre5og2zz3f5ldq"
+			// address: "bc1kar0ssrr7xf3vy5l6d3lydnwkre5og2zz3f5ldq" // Address is added as safety check cross ref with 'key'
 		}
 
-		const res = await this.makeRequest({ path: path, nonce: nonce, data: data })
-		console.log(res)
+		const krakenRes = await this.makeRequest<KrakenWithdrawRes>({
+			path: path,
+			nonce: nonce,
+			data: data
+		})
+
+		let res: ServiceRes<KrakenWithdrawRes>
+
+		if (krakenRes.error.length > 0) res = { success: false, error: krakenRes.error }
+		else if (krakenRes.result === undefined) throw new Error("No Kraken result")
+		else res = { success: true, data: krakenRes.result }
+
+		return res
 	}
 }
 
