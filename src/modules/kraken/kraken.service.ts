@@ -77,6 +77,7 @@ class KrakenService {
 			console.log("Checking errors")
 			errors.forEach((error) => {
 				console.log(`start:${error}:end`)
+				console.log(KrakenResErrors)
 				const errorMsg = KrakenResErrors[error.trim()]
 				if (errorMsg !== undefined) errorsRes.push(errorMsg)
 			})
