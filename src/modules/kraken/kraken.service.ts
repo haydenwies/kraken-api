@@ -65,11 +65,31 @@ class KrakenService {
 		const res = await makeRequest(options, postData)
 		const resJson: KrakenResponse<T> = JSON.parse(res)
 
+		// TODO Add error handler here
+
 		return resJson
 	}
 
 	private makeNonce(): string {
 		return String(Date.now() * 1000)
+	}
+
+	public async getBalance() {
+		// https://docs.kraken.com/api/docs/rest-api/add-order/
+
+		const path = "/0/private/Balance"
+		const nonce = this.makeNonce()
+		const data = {
+			nonce: nonce
+		}
+
+		const krakenRes = await this.makeRequest<KrakenAddOrderResult>({
+			path: path,
+			nonce: nonce,
+			data: data
+		})
+
+		console.log(krakenRes)
 	}
 
 	public async addOrder(): Promise<ServiceRes<KrakenAddOrderResult>> {

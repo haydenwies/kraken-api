@@ -28,6 +28,27 @@ app.get("/", async (req: Request, res: Response) => {
 	}
 })
 
+app.get("/balance", async (req: Request, res: Response) => {
+	const krakenService = new KrakenService(
+		process.env.KRAKEN_API_KEY,
+		process.env.KRAKEN_API_SECRET,
+		process.env.KRAKEN_API_WITHDRAW_KEY
+	)
+
+	try {
+		const krakenRes = await krakenService.getBalance()
+
+		// if (krakenRes.success === false) {
+		// 	res.status(500).send(krakenRes.error) // TODO Change status code
+		// } else {
+		// 	res.status(200).send(krakenRes.data)
+		// }
+	} catch (err: unknown) {
+		console.error(err)
+		res.status(500).send("An internal error occurred")
+	}
+})
+
 app.get("/withdraw", async (req: Request, res: Response) => {
 	const krakenService = new KrakenService(
 		process.env.KRAKEN_API_KEY,
