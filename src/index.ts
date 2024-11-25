@@ -35,10 +35,12 @@ app.get("/balance", async (req: Request, res: Response) => {
 		const krakenRes = await krakenService.getBalance()
 		const assets = await krakenService.assets()
 
-		const balance = Object.entries(krakenRes).map(([key, value]) => {
-			const assetName = assets[key].altname
-			return { [assetName]: value }
-		})
+		const balance = Object.fromEntries(
+			Object.entries(krakenRes).map(([key, value]) => {
+				const assetName = assets[key].altname
+				return [assetName, value]
+			})
+		)
 
 		res.status(200).send(balance)
 	} catch (err: unknown) {
