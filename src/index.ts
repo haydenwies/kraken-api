@@ -8,9 +8,10 @@ import krakenService from "./modules/kraken/kraken.service"
 const app: Express = express()
 const port = process.env.PORT
 
+// TODO REMOVE
 app.get("/assets", async (req: Request, res: Response) => {
 	try {
-		const krakenRes = await krakenService.assets()
+		const krakenRes = await krakenService.getAssets()
 
 		res.status(200).send(krakenRes)
 	} catch (err: unknown) {
@@ -32,8 +33,10 @@ app.get("/addOrder", async (req: Request, res: Response) => {
 
 app.get("/balance", async (req: Request, res: Response) => {
 	try {
-		const balance = await krakenService.getBalance()
-		const assets = await krakenService.assets()
+		const balancePromise = krakenService.getBalance()
+		const assetsPromise = krakenService.getAssets()
+
+		const [balance, assets] = await Promise.all([balancePromise, assetsPromise])
 
 		// Update asset keys to reflect actual token names
 		const maskedBalance = Object.fromEntries(

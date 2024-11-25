@@ -5,6 +5,7 @@ import { makeRequest } from "../../utils/https"
 import { ServiceRes } from "../../types/service-response"
 import {
 	KrakenAddOrderResult,
+	KrakenAssetsResult,
 	KrakenBalanceResult,
 	KrakenResponse,
 	KrakenWithdrawResult
@@ -27,7 +28,7 @@ class KrakenService {
 		this.API_WITHDRAW_KEY = krakenApiWithdrawKey
 	}
 
-	private async makeGet({ path }: { path: string }): Promise<KrakenResponse<any>> {
+	private async makeGet<T>({ path }: { path: string }): Promise<KrakenResponse<T>> {
 		const options = {
 			hostname: this.HOSTNAME,
 			path: path,
@@ -89,7 +90,7 @@ class KrakenService {
 		return String(Date.now() * 1000)
 	}
 
-	private handleError(errors: string[]): string[] | void {
+	private handleErrors(errors: string[]): string[] | void {
 		const errorsRes: string[] = []
 
 		errors.forEach((error) => {
@@ -110,12 +111,14 @@ class KrakenService {
 		}
 	}
 
-	public async assets() {
+	// #region PUBLIC
+
+	public async getAssets(): Promise<KrakenAssetsResult> {
 		const path = "/0/public/Assets"
 
-		const krakenRes = await this.makeGet({ path: path })
+		const krakenRes = await this.makeGet<KrakenAssetsResult>({ path: path })
 
-		const error = this.handleError(krakenRes.error)
+		const error = this.handleErrors(krakenRes.error)
 
 		if (error) throw new Error(error.toString())
 		else if (!krakenRes.result) throw new Error("No Kraken result")
@@ -137,7 +140,7 @@ class KrakenService {
 			data: data
 		})
 
-		const error = this.handleError(krakenRes.error)
+		const error = this.handleErrors(krakenRes.error)
 
 		if (error) throw new Error(error.toString())
 		else if (!krakenRes.result) throw new Error("No Kraken result")
@@ -164,7 +167,7 @@ class KrakenService {
 			data: data
 		})
 
-		const error = this.handleError(krakenRes.error)
+		const error = this.handleErrors(krakenRes.error)
 
 		if (error) throw new Error(error.toString())
 		else if (!krakenRes.result) throw new Error("No Kraken result")
@@ -192,7 +195,7 @@ class KrakenService {
 			data: data
 		})
 
-		const error = this.handleError(krakenRes.error)
+		const error = this.handleErrors(krakenRes.error)
 
 		if (error) throw new Error(error.toString())
 		else if (!krakenRes.result) throw new Error("No Kraken result")
