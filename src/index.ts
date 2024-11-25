@@ -32,17 +32,18 @@ app.get("/addOrder", async (req: Request, res: Response) => {
 
 app.get("/balance", async (req: Request, res: Response) => {
 	try {
-		const krakenRes = await krakenService.getBalance()
+		const balance = await krakenService.getBalance()
 		const assets = await krakenService.assets()
 
-		const balance = Object.fromEntries(
-			Object.entries(krakenRes).map(([key, value]) => {
+		// Update asset keys to reflect actual token names
+		const maskedBalance = Object.fromEntries(
+			Object.entries(balance).map(([key, value]) => {
 				const assetName = assets[key].altname
 				return [assetName, value]
 			})
 		)
 
-		res.status(200).send(balance)
+		res.status(200).send(maskedBalance)
 	} catch (err: unknown) {
 		console.error(err)
 		res.status(500).send("An internal error occurred")
