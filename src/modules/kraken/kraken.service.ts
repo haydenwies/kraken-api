@@ -27,8 +27,20 @@ class KrakenService {
 		this.API_WITHDRAW_KEY = krakenApiWithdrawKey
 	}
 
-	// TODO Update to include GET method (make data param optional)
-	private async makeRequest<T>({
+	private async makeGet({ path }: { path: string }): Promise<KrakenResponse<any>> {
+		const options = {
+			hostname: this.HOSTNAME,
+			path: path,
+			mathod: "GET"
+		}
+
+		const res = await makeRequest(options)
+		const resJson = JSON.parse(res)
+
+		return resJson
+	}
+
+	private async makePost<T>({
 		path,
 		nonce,
 		data
@@ -70,8 +82,6 @@ class KrakenService {
 		const res = await makeRequest(options, postData)
 		const resJson: KrakenResponse<T> = JSON.parse(res)
 
-		// TODO Add error handler here
-
 		return resJson
 	}
 
@@ -97,9 +107,19 @@ class KrakenService {
 
 		if (errorsRes.length > 0) {
 			return errorsRes
-		} else {
-			return
 		}
+	}
+
+	public async assets() {
+		const path = "/0/public/Assets"
+
+		const krakenRes = await this.makeGet({ path: path })
+
+		const error = this.handleError(krakenRes.error)
+
+		if (error) throw new Error(error.toString())
+		else if (!krakenRes.result) throw new Error("No Kraken result")
+		else return krakenRes.result
 	}
 
 	public async getBalance(): Promise<KrakenBalanceResult> {
@@ -111,7 +131,7 @@ class KrakenService {
 			nonce: nonce
 		}
 
-		const krakenRes = await this.makeRequest<KrakenBalanceResult>({
+		const krakenRes = await this.makePost<KrakenBalanceResult>({
 			path: path,
 			nonce: nonce,
 			data: data
@@ -138,7 +158,7 @@ class KrakenService {
 			price: "27500"
 		}
 
-		const krakenRes = await this.makeRequest<KrakenAddOrderResult>({
+		const krakenRes = await this.makePost<KrakenAddOrderResult>({
 			path: path,
 			nonce: nonce,
 			data: data
@@ -166,7 +186,7 @@ class KrakenService {
 			// address: "bc1kar0ssrr7xf3vy5l6d3lydnwkre5og2zz3f5ldq" // Address is added as safety check cross ref with 'key'
 		}
 
-		const krakenRes = await this.makeRequest<KrakenWithdrawResult>({
+		const krakenRes = await this.makePost<KrakenWithdrawResult>({
 			path: path,
 			nonce: nonce,
 			data: data

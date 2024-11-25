@@ -8,6 +8,17 @@ import krakenService from "./modules/kraken/kraken.service"
 const app: Express = express()
 const port = process.env.PORT
 
+app.get("/assets", async (req: Request, res: Response) => {
+	try {
+		const krakenRes = await krakenService.assets()
+
+		res.status(200).send(krakenRes)
+	} catch (err: unknown) {
+		console.error(err)
+		res.status(500).send("An internal error occurred")
+	}
+})
+
 app.get("/addOrder", async (req: Request, res: Response) => {
 	try {
 		const krakenRes = await krakenService.addOrder()
