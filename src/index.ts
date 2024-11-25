@@ -33,8 +33,14 @@ app.get("/addOrder", async (req: Request, res: Response) => {
 app.get("/balance", async (req: Request, res: Response) => {
 	try {
 		const krakenRes = await krakenService.getBalance()
+		const assets = await krakenService.assets()
 
-		res.status(200).send(krakenRes)
+		const balance = Object.entries(krakenRes).map(([key, value]) => {
+			const assetName = assets[key].altname
+			return { [assetName]: value }
+		})
+
+		res.status(200).send(balance)
 	} catch (err: unknown) {
 		console.error(err)
 		res.status(500).send("An internal error occurred")
