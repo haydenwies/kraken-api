@@ -135,6 +135,7 @@ class KrakenService {
 		})
 
 		let res: ServiceRes<KrakenWithdrawRes>
+		console.log(krakenRes)
 
 		if (krakenRes.error.length > 0) res = { success: false, error: krakenRes.error }
 		else if (krakenRes.result === undefined) throw new Error("No Kraken result")
