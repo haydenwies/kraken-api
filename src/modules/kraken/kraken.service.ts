@@ -74,8 +74,10 @@ class KrakenService {
 		const errorsRes: string[] = []
 
 		if (errors.length > 0) {
+			console.log("Checking errors")
 			errors.forEach((error) => {
-				if (error in Object.keys(KrakenResErrors)) errorsRes.push(KrakenResErrors[error])
+				const errorMsg = KrakenResErrors[error]
+				if (errorMsg !== undefined) errorsRes.push(errorMsg)
 			})
 		}
 

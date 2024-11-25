@@ -21,7 +21,7 @@ type KrakenWithdrawRes = {
 
 // Error codes
 
-const KrakenResErrors: Record<string, string> = {
+const KrakenResErrors: Partial<Record<string, string>> = {
 	"EOrder:Insufficient funds": "Insufficient funds"
 }
 
