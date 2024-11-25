@@ -3,7 +3,12 @@ import * as querystring from "querystring"
 
 import { makeRequest } from "../../utils/https"
 import { ServiceRes } from "../../types/service-response"
-import { KrakenAddOrderResult, KrakenResponse, KrakenWithdrawResult } from "./kraken.type"
+import {
+	KrakenAddOrderResult,
+	KrakenBalanceResult,
+	KrakenResponse,
+	KrakenWithdrawResult
+} from "./kraken.type"
 
 class KrakenService {
 	private API_KEY: string
@@ -74,8 +79,31 @@ class KrakenService {
 		return String(Date.now() * 1000)
 	}
 
-	public async getBalance() {
-		// https://docs.kraken.com/api/docs/rest-api/add-order/
+	private handleError(errors: string[]): string[] | void {
+		const errorsRes: string[] = []
+
+		errors.forEach((error) => {
+			switch (error) {
+				case "EOrder:Insufficient funds": // Add order
+					errorsRes.push("Insufficient funds")
+					break
+				case "EFunding:Insufficient funds": // Withdraw
+					errorsRes.push("Insufficient funds")
+					break
+				default:
+					break
+			}
+		})
+
+		if (errorsRes.length > 0) {
+			return errorsRes
+		} else {
+			return
+		}
+	}
+
+	public async getBalance(): Promise<KrakenBalanceResult> {
+		// https://docs.kraken.com/api/docs/rest-api/get-account-balance/
 
 		const path = "/0/private/Balance"
 		const nonce = this.makeNonce()
@@ -83,16 +111,20 @@ class KrakenService {
 			nonce: nonce
 		}
 
-		const krakenRes = await this.makeRequest<KrakenAddOrderResult>({
+		const krakenRes = await this.makeRequest<KrakenBalanceResult>({
 			path: path,
 			nonce: nonce,
 			data: data
 		})
 
-		console.log(krakenRes)
+		const error = this.handleError(krakenRes.error)
+
+		if (error) throw new Error(error.toString())
+		else if (!krakenRes.result) throw new Error("No Kraken result")
+		else return krakenRes.result
 	}
 
-	public async addOrder(): Promise<ServiceRes<KrakenAddOrderResult>> {
+	public async addOrder(): Promise<KrakenAddOrderResult> {
 		// https://docs.kraken.com/api/docs/rest-api/add-order/
 
 		const path = "/0/private/AddOrder"
@@ -112,20 +144,17 @@ class KrakenService {
 			data: data
 		})
 
-		let res: ServiceRes<KrakenAddOrderResult>
+		const error = this.handleError(krakenRes.error)
 
-		// If errors from Kraken return to controller
-		if (krakenRes.error.length > 0) res = { success: false, error: krakenRes.error }
-		// If result is missing throw internal error
-		else if (krakenRes.result === undefined) throw new Error("No Kraken result")
-		// Return result
-		else res = { success: true, data: krakenRes.result }
-
-		return res
+		if (error) throw new Error(error.toString())
+		else if (!krakenRes.result) throw new Error("No Kraken result")
+		else return krakenRes.result
 	}
 
-	public async withdraw(): Promise<ServiceRes<KrakenWithdrawResult>> {
+	public async withdraw(): Promise<KrakenWithdrawResult> {
 		// https://docs.kraken.com/api/docs/rest-api/withdraw-funds/
+
+		const errors = ["EFunding:Insufficient funds"]
 
 		const path = "/0/private/Withdraw"
 		const nonce = this.makeNonce()
@@ -143,17 +172,18 @@ class KrakenService {
 			data: data
 		})
 
-		let res: ServiceRes<KrakenWithdrawResult>
+		const error = this.handleError(krakenRes.error)
 
-		// If errors from Kraken return to controller
-		if (krakenRes.error.length > 0) res = { success: false, error: krakenRes.error }
-		// If result is missing throw internal error
-		else if (krakenRes.result === undefined) throw new Error("No Kraken result")
-		// Return result
-		else res = { success: true, data: krakenRes.result }
-
-		return res
+		if (error) throw new Error(error.toString())
+		else if (!krakenRes.result) throw new Error("No Kraken result")
+		else return krakenRes.result
 	}
 }
 
-export default KrakenService
+const krakenService = new KrakenService(
+	process.env.KRAKEN_API_KEY,
+	process.env.KRAKEN_API_SECRET,
+	process.env.KRAKEN_API_WITHDRAW_KEY
+)
+
+export default krakenService

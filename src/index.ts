@@ -1,27 +1,18 @@
 import express, { Express, Request, Response } from "express"
 import dotenv from "dotenv"
-import KrakenService from "./modules/kraken/kraken.service"
 
 dotenv.config()
+
+import krakenService from "./modules/kraken/kraken.service"
 
 const app: Express = express()
 const port = process.env.PORT
 
-app.get("/", async (req: Request, res: Response) => {
-	const krakenService = new KrakenService(
-		process.env.KRAKEN_API_KEY,
-		process.env.KRAKEN_API_SECRET,
-		process.env.KRAKEN_API_WITHDRAW_KEY
-	)
-
+app.get("/addOrder", async (req: Request, res: Response) => {
 	try {
 		const krakenRes = await krakenService.addOrder()
 
-		if (krakenRes.success === false) {
-			res.status(500).send(krakenRes.error) // TODO Change status code
-		} else {
-			res.status(200).send(krakenRes.data)
-		}
+		res.status(200).send(krakenRes)
 	} catch (err: unknown) {
 		console.error(err)
 		res.status(500).send("An internal error occurred")
@@ -29,20 +20,10 @@ app.get("/", async (req: Request, res: Response) => {
 })
 
 app.get("/balance", async (req: Request, res: Response) => {
-	const krakenService = new KrakenService(
-		process.env.KRAKEN_API_KEY,
-		process.env.KRAKEN_API_SECRET,
-		process.env.KRAKEN_API_WITHDRAW_KEY
-	)
-
 	try {
 		const krakenRes = await krakenService.getBalance()
 
-		// if (krakenRes.success === false) {
-		// 	res.status(500).send(krakenRes.error) // TODO Change status code
-		// } else {
-		// 	res.status(200).send(krakenRes.data)
-		// }
+		res.status(200).send(krakenRes)
 	} catch (err: unknown) {
 		console.error(err)
 		res.status(500).send("An internal error occurred")
@@ -50,20 +31,10 @@ app.get("/balance", async (req: Request, res: Response) => {
 })
 
 app.get("/withdraw", async (req: Request, res: Response) => {
-	const krakenService = new KrakenService(
-		process.env.KRAKEN_API_KEY,
-		process.env.KRAKEN_API_SECRET,
-		process.env.KRAKEN_API_WITHDRAW_KEY
-	)
-
 	try {
 		const krakenRes = await krakenService.withdraw()
 
-		if (krakenRes.success === false) {
-			res.status(500).send(krakenRes.error) // TODO Change status code
-		} else {
-			res.status(200).send(krakenRes.data)
-		}
+		res.status(200).send(krakenRes)
 	} catch (err: unknown) {
 		console.error(err)
 		res.status(500).send("An internal error occurred")

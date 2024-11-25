@@ -7,6 +7,8 @@ type KrakenResponse<T> = {
 
 // API method result types
 
+type KrakenBalanceResult = Record<string, string>
+
 type KrakenAddOrderResult = {
 	descr: {
 		order: string
@@ -19,4 +21,9 @@ type KrakenWithdrawResult = {
 	refid: string
 }
 
-export { type KrakenResponse, type KrakenAddOrderResult, type KrakenWithdrawResult }
+export {
+	type KrakenResponse,
+	type KrakenAddOrderResult,
+	type KrakenWithdrawResult,
+	type KrakenBalanceResult
+}
