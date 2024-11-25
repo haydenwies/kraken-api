@@ -1,13 +1,13 @@
 // Generic API response structure
 
-type KrakenRes<T> = {
+type KrakenResponse<T> = {
 	result?: T
 	error: string[]
 }
 
 // API method result types
 
-type KrakenAddOrderRes = {
+type KrakenAddOrderResult = {
 	descr: {
 		order: string
 		close?: string
@@ -15,8 +15,8 @@ type KrakenAddOrderRes = {
 	txid: string[]
 }
 
-type KrakenWithdrawRes = {
+type KrakenWithdrawResult = {
 	refid: string
 }
 
-export { type KrakenRes, type KrakenAddOrderRes, type KrakenWithdrawRes }
+export { type KrakenResponse, type KrakenAddOrderResult, type KrakenWithdrawResult }
