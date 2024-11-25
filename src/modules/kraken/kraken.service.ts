@@ -3,7 +3,7 @@ import * as querystring from "querystring"
 
 import { makeRequest } from "../../utils/https"
 import { ServiceRes } from "../../types/service-response"
-import { KrakenAddOrderRes, KrakenRes, KrakenResErrors, KrakenWithdrawRes } from "./kraken.type"
+import { KrakenAddOrderRes, KrakenRes, KrakenWithdrawRes } from "./kraken.type"
 
 class KrakenService {
 	private apiKey: string
@@ -64,26 +64,7 @@ class KrakenService {
 		const res = await makeRequest(options, postData)
 		const resJson: KrakenRes<T> = JSON.parse(res)
 
-		const maskedError = this.handleErrors(resJson.error)
-		resJson.error = maskedError
-
 		return resJson
-	}
-
-	private handleErrors(errors: string[]): string[] {
-		const errorsRes: string[] = []
-
-		if (errors.length > 0) {
-			console.log("Checking errors")
-			errors.forEach((error) => {
-				console.log(`start:${error}:end`)
-				console.log(KrakenResErrors)
-				const errorMsg = KrakenResErrors[error.trim()]
-				if (errorMsg !== undefined) errorsRes.push(errorMsg)
-			})
-		}
-
-		return errorsRes
 	}
 
 	private makeNonce(): string {

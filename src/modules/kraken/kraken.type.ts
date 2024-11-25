@@ -19,10 +19,4 @@ type KrakenWithdrawRes = {
 	refid: string
 }
 
-// Error codes
-
-const KrakenResErrors: Partial<Record<string, string>> = {
-	"EOrder:Insufficient funds": "Insufficient funds"
-}
-
-export { type KrakenRes, type KrakenAddOrderRes, type KrakenWithdrawRes, KrakenResErrors }
+export { type KrakenRes, type KrakenAddOrderRes, type KrakenWithdrawRes }

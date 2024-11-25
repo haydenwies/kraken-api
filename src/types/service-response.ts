@@ -5,7 +5,7 @@ type ServiceRes<T> =
 	  }
 	| {
 			success: false
-			error: string[]
+			error: unknown
 	  }
 
 export { type ServiceRes }
